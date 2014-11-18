@@ -1,3 +1,6 @@
 {
 	"crawlpagecount" : 10,
+	"posttimebefore" : 2,
+	"localdbhost" : "127.0.0.1",
+	"clouddbhost" : "alikidscare.mysql.rds.aliyuncs.com",
 }

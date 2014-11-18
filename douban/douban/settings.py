@@ -13,3 +13,5 @@ NEWSPIDER_MODULE = 'douban.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'douban (+http://www.yourdomain.com)'
+ITEM_PIPELINES = {'douban.pipelines.DoubanPreprocessPipeline': 1,
+                  }

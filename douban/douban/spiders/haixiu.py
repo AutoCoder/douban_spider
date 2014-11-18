@@ -1,3 +1,9 @@
+'''
+Created on 2014.11.17
+
+@author: tj_liyuan
+'''
+
 from scrapy.spider import Spider
 from scrapy import log
 from datetime import datetime
@@ -62,19 +68,16 @@ class Haixiu_Spider(BaseSpider):
         try:
             item = response.meta['item']
             sel = Selector(None, response.body_as_unicode().replace('\t','').replace('\r','').replace('\n',''), 'html')
-            
+
             #parse topic related info
-            item["content"] = sel.xpath('//div[@class="topic-content"]').extract()[0]
-            item["uuid"] = str(uuid.uuid1())
             post_time_str = sel.xpath('//div[@class="topic-doc"]/h3/span[@class="color-green"]/text()').extract()[0]
             item["post_timestamp"] = Utility.Timestr2Timestamp(post_time_str)
-            yield item
-            yield Request(url=item["douban_topic_link"] + "?start=0", meta={'uuid':item["uuid"]}, callback=self.parse_comment)
-            #parse the first comments info
-            #yield Request(url=item["douban_topic_link"], callback=self.parse_comment)
             
-            #comment_block = sel.xpath('//ul[@id="comments" and @class="topic-reply"]').extract()[0] # comment_block should be html format
-            #self.parse_comment(comment_block, item["uuid"])
+            item["content"] = sel.xpath('//div[@class="topic-content"]').extract()[0]
+
+            yield item
+            yield Request(url=item["douban_topic_link"] + "?start=0", meta={'topic':item["douban_topic_link"]}, callback=self.parse_comment)
+
         except Exception, info: #IndexError
             s=sys.exc_info()
             log.msg("[haixiu] Error '%s' happened on line %d" % (s[1],s[2].tb_lineno), log.ERROR)
@@ -84,29 +87,47 @@ class Haixiu_Spider(BaseSpider):
     
     def parse_comment(self, response):
         sel = Selector(None, response.body_as_unicode().replace('\t','').replace('\r','').replace('\n',''), 'html')
-        uuid = response.meta['uuid']
+        topic_link = response.meta['topic']
+
         comments_nodes = sel.xpath('//ul[@id="comments" and @class="topic-reply"]/li')
-        for comment_node in comments_nodes:            
-            cm_item = HaixiuCommentItem()
-            cm_item["uuid"] = uuid
-            cm_item["content"] = comment_node.xpath('div[@class="reply-doc content"]/p/text()').extract()[0]
-            cm_item["author"] = comment_node.xpath('div[@class="bg-img-green"]/h4/a/text()').extract()[0]
-            cm_item["author_page_link"]= comment_node.xpath('div[@class="bg-img-green"]/h4/a/@href').extract()[0]
-            cm_item["quote_author"] = ""
-            cm_item["quote_content"] = ""
-            reply_time_str = comment_node.xpath('div[@class="bg-img-green"]/h4/span[@class="pubtime"]/text()').extract()[0]
-            cm_item["post_timestamp"] = Utility.Timestr2Timestamp(reply_time_str)
-            up_count_str = comment_node.xpath('div[@class="operation_div"]/a[@class="comment-vote lnk-fav"]').extract()[0]
-            cm_item["up_count"] = self.__extractUpCount(up_count_str)
-            cm_item["quote_count"] = -1
-            yield cm_item;
+        for comment_node in comments_nodes:
+            try:
+                cm_item = HaixiuCommentItem()
+                cm_item["douban_topic_link"] = topic_link
+                inner_comment_node = comment_node.xpath('div[@class="reply-doc content"]')
+                cm_item["content"] = inner_comment_node.xpath('p/text()').extract()[0]
+                cm_item["author"] = inner_comment_node.xpath('div[@class="bg-img-green"]/h4/a/text()').extract()[0]
+                cm_item["author_page_link"]= inner_comment_node.xpath('div[@class="bg-img-green"]/h4/a/@href').extract()[0]
+                
+                quote_node = comment_node.xpath('div[@class="reply-quote"]')
+                if quote_node:
+                    cm_item["quote_content"] = quote_node.xpath('span[@class="all"]').extract()[0]
+                    cm_item["quote_author"] = quote_node.xpath('span[@class="pubdate"]/a/text()').extract()[0]
+                    cm_item["quote_author_link"] = quote_node.xpath('span[@class="pubdate"]/a/@href').extract()[0]
+                    pass
+                else:
+                    cm_item["quote_author"] = ""
+                    cm_item["quote_content"] = ""
+                    cm_item["quote_author_link"] = ""
+                    
+                reply_time_str = inner_comment_node.xpath('div[@class="bg-img-green"]/h4/span[@class="pubtime"]/text()').extract()[0]
+                cm_item["post_timestamp"] = Utility.Timestr2Timestamp(reply_time_str)
+                up_count_str = inner_comment_node.xpath('div[@class="operation_div"]/a[@class="comment-vote lnk-fav"]/text()').extract()[0]
+                cm_item["up_count"] = self.__extractUpCount(up_count_str)
+                cm_item["quote_count"] = -1
+                yield cm_item;
+                
+            except Exception, info: #IndexError
+                s=sys.exc_info()
+                log.msg("[haixiu] Error '%s' happened on line %d" % (s[1],s[2].tb_lineno), log.ERROR)
+                #log.msg('[jd_milk] prod_link : %s' % prod_link, log.ERROR)
+                log.msg('[haixiu] item : %s' % cm_item, log.ERROR) 
         
-        next_url_node = sel.xpath('//div[@class="paginator"]/span[@class="next"]/a/@href')
+        next_url_node = sel.xpath('//div[@class="paginator"]/span[@class="next"]/a/@href')#
         next_url = next_url_node.extract()[0] if next_url_node else None
         if next_url:        
             yield Request(url=next_url, meta={'uuid': uuid}, callback=self.parse_comment)
-    
-    
+                
     def parse_comment_conent(self, html):
         item = HaixiuCommentItem()
         yield item
@@ -120,4 +141,4 @@ class Haixiu_Spider(BaseSpider):
         if m:
             return m.group(1)
         else: 
-            return ""
+            return 0

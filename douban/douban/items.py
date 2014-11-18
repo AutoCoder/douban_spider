@@ -11,7 +11,6 @@ class DoubanItem(Item):
     pass
 
 class HaixiuItem(Item):
-    uuid = Field()
     title = Field()
     author = Field()
     author_page_link = Field()
@@ -24,11 +23,12 @@ class HaixiuItem(Item):
     image_count = Field()
     
 class HaixiuCommentItem(Item):
-    uuid = Field()
+    douban_topic_link = Field()
     content = Field()
     author = Field()
     author_page_link = Field()
     quote_author = Field()
+    quote_author_link = Field()
     quote_content = Field()
     post_timestamp = Field()
     up_count = Field()
