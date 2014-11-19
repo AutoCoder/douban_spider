@@ -16,6 +16,14 @@ class Utility(object):
             return int(time.mktime(t))
         else:
             return -1
+        
+    @staticmethod
+    def Timestamp2Timestr(timestamp, time_format = "%Y-%m-%d %H:%M:%S"):
+        """return -1 if input is invalid"""
+        if timestamp and format:
+            return datetime.fromtimestamp(timestamp).strftime(time_format)
+        else:
+            return None
     
     @staticmethod
     def TimeToNow(time_str="", time_format = "%Y-%m-%d %H:%M:%S"):

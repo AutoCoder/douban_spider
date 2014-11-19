@@ -10,22 +10,18 @@ from datetime import datetime
 
 from scrapy.selector import Selector
 from scrapy.http import Request
-from scrapy.exceptions import DropItem
-#from spiderutility import SpiderUtility
+#from scrapy.exceptions import DropItem
 from douban.items import HaixiuItem, HaixiuCommentItem
 from douban.spiders.basespider import BaseSpider
 from douban.utility import Utility
 
 import sys
-import uuid
 import re
 
 class Haixiu_Spider(BaseSpider):
     name = "haixiu"
     allowed_domains = ["www.douban.com"]
-    start_urls = []
-    for page_idx in xrange(10):
-        start_urls.append("http://www.douban.com/group/haixiuzu/discussion?start=%d" % page_idx)
+    start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",]
     
     def __init__(self):
         super(Spider, self).__init__()
@@ -39,7 +35,8 @@ class Haixiu_Spider(BaseSpider):
         #sel = Selector(response)
         sel = Selector(None, response.body_as_unicode().replace('\t','').replace('\r','').replace('\n',''), 'html') #avoid the html contain "\n", "\r" , which will caused the xpath doesn't work well
         listdata = sel.xpath('//tr[@class!="th" and not(@id)]')
-        
+        page_idx = (int)(response.url.split('=')[-1])
+        nextpageurl = "http://www.douban.com/group/haixiuzu/discussion?start=%d" % (page_idx+1)
         try:
             for topic in listdata:
                 item = HaixiuItem()
@@ -53,10 +50,15 @@ class Haixiu_Spider(BaseSpider):
                     item["comments_count"] = int(comment_count_node[0])
                 else:
                     item["comments_count"] = 0
+                
                 post_datetime_str = "%d-%s" % (datetime.today().year, topic.xpath('td[last()]/text()').extract()[0])
-                item["latest_comment_timestamp"] = Utility.Timestr2Timestamp(post_datetime_str, "%Y-%m-%d %H:%M")
-    
+                latest_comment_timestamp = Utility.Timestr2Timestamp(post_datetime_str, "%Y-%m-%d %H:%M")
+                item["latest_comment_timestamp"] = Utility.Timestamp2Timestr(latest_comment_timestamp)
+                
                 yield Request(url=item["douban_topic_link"], meta={'item':item}, callback=self.parse_topic)
+                
+            yield Request(url=nextpageurl, callback=self.parse)
+            
         except Exception, info: #IndexError
                 s=sys.exc_info()                             
                 log.msg("[haixiu] Error '%s' happened on line %d" % (s[1],s[2].tb_lineno), log.ERROR)
@@ -71,9 +73,12 @@ class Haixiu_Spider(BaseSpider):
 
             #parse topic related info
             post_time_str = sel.xpath('//div[@class="topic-doc"]/h3/span[@class="color-green"]/text()').extract()[0]
-            item["post_timestamp"] = Utility.Timestr2Timestamp(post_time_str)
+            item["post_timestamp"] = post_time_str
             
-            item["content"] = sel.xpath('//div[@class="topic-content"]').extract()[0]
+            content_node = sel.xpath('//div[@class="topic-content"]')
+            image_nodes = sel.xpath('//div[@class="topic-content"]//img')
+            item["image_count"] = len(image_nodes)
+            item["content"] = content_node.extract()[0]
 
             yield item
             yield Request(url=item["douban_topic_link"] + "?start=0", meta={'topic':item["douban_topic_link"]}, callback=self.parse_comment)
@@ -104,14 +109,13 @@ class Haixiu_Spider(BaseSpider):
                     cm_item["quote_content"] = quote_node.xpath('span[@class="all"]').extract()[0]
                     cm_item["quote_author"] = quote_node.xpath('span[@class="pubdate"]/a/text()').extract()[0]
                     cm_item["quote_author_link"] = quote_node.xpath('span[@class="pubdate"]/a/@href').extract()[0]
-                    pass
                 else:
                     cm_item["quote_author"] = ""
                     cm_item["quote_content"] = ""
                     cm_item["quote_author_link"] = ""
                     
                 reply_time_str = inner_comment_node.xpath('div[@class="bg-img-green"]/h4/span[@class="pubtime"]/text()').extract()[0]
-                cm_item["post_timestamp"] = Utility.Timestr2Timestamp(reply_time_str)
+                cm_item["post_timestamp"] = reply_time_str
                 up_count_str = inner_comment_node.xpath('div[@class="operation_div"]/a[@class="comment-vote lnk-fav"]/text()').extract()[0]
                 cm_item["up_count"] = self.__extractUpCount(up_count_str)
                 cm_item["quote_count"] = -1
@@ -126,16 +130,13 @@ class Haixiu_Spider(BaseSpider):
         next_url_node = sel.xpath('//div[@class="paginator"]/span[@class="next"]/a/@href')#
         next_url = next_url_node.extract()[0] if next_url_node else None
         if next_url:        
-            yield Request(url=next_url, meta={'uuid': uuid}, callback=self.parse_comment)
-                
-    def parse_comment_conent(self, html):
-        item = HaixiuCommentItem()
-        yield item
-    
-    
+            yield Request(url=next_url, meta={'topic': topic_link}, callback=self.parse_comment)
+
+
     def __unicode__(self):
         return unicode(self.name)
-    
+
+
     def __extractUpCount(self, up_str):
         m = re.match(ur"\((\d+)\)", up_str)
         if m:
