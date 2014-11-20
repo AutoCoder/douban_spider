@@ -33,8 +33,7 @@ class DoubanDbHelper(object):
                                                      latest_comment_timestamp TIMESTAMP NOT NULL,
                                                      post_timestamp TIMESTAMP NOT NULL) 
                                                      ENGINE = InnoDB 
-                                                     DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
-                                  ALTER TABLE `bbs_topics` ADD INDEX `idx_douban_topic_link` (`douban_topic_link` ASC);"""
+                                                     DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"""
             createtable_sql2 = """CREATE TABLE IF NOT EXISTS topic_comments (Id INT PRIMARY KEY AUTO_INCREMENT,
                                                      douban_topic_link varchar(100) NOT NULL, 
                                                      content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL , 
@@ -48,6 +47,7 @@ class DoubanDbHelper(object):
                                                      quote_count INT DEFAULT -1) 
                                                      ENGINE = InnoDB
                                                      DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"""
+            addindex_sql = """ALTER TABLE `bbs_topics` ADD INDEX `idx_douban_topic_link` (`douban_topic_link` ASC);"""
 #                                  ALTER TABLE `topic_comments` ADD CONSTRAINT `topic_id`
 #                                     FOREIGN KEY (`douban_topic_link`)
 #                                     REFERENCES `bbs_topics` (`douban_topic_link`)
@@ -58,6 +58,8 @@ class DoubanDbHelper(object):
             cur.execute(createtable_sql1)
             conn.commit()
             cur.execute(createtable_sql2)
+            conn.commit()
+            cur.execute(addindex_sql)
             conn.commit()
         except MySQLdb.Error,e:
             log.msg("Mysql Error %d: %s" % (e.args[0], e.args[1]), log.ERROR)
