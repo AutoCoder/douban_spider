@@ -16,40 +16,48 @@ class DoubanDbHelper(object):
                 log.msg("[SetupDoubanSchema()] the conn argument is None!", log.ERROR)
                 return
             cur = conn.cursor()
-            cur.execute('create database if not exists Douban') 
+            cur.execute('create database if not exists Douban DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin')
             conn.commit()   
              
             conn.select_db('Douban')
             cur=conn.cursor()
-            createtable_sql = """CREATE TABLE IF NOT EXISTS bbs_topics (Id INT PRIMARY KEY AUTO_INCREMENT,
+            createtable_sql1 = """CREATE TABLE IF NOT EXISTS bbs_topics (Id INT PRIMARY KEY AUTO_INCREMENT,
                                                      title TEXT NOT NULL, 
                                                      author varchar(30) NOT NULL,
                                                      author_page_link varchar(100) NOT NULL,
-                                                     content TEXT NOT NULL, 
+                                                     content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL, 
                                                      comments_count INT, 
                                                      image_count INT, 
                                                      douban_topic_id varchar(10),
                                                      douban_topic_link varchar(100),
                                                      latest_comment_timestamp TIMESTAMP NOT NULL,
-                                                     post_timestamp TIMESTAMP NOT NULL) ENGINE = InnoDB;
-                                 ALTER TABLE `bbs_topics` ADD INDEX `idx_douban_topic_link` (`douban_topic_link` ASC);
-                                 CREATE TABLE IF NOT EXISTS topic_comments (Id INT PRIMARY KEY AUTO_INCREMENT,
+                                                     post_timestamp TIMESTAMP NOT NULL) 
+                                                     ENGINE = InnoDB 
+                                                     DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+                                  ALTER TABLE `bbs_topics` ADD INDEX `idx_douban_topic_link` (`douban_topic_link` ASC);"""
+            createtable_sql2 = """CREATE TABLE IF NOT EXISTS topic_comments (Id INT PRIMARY KEY AUTO_INCREMENT,
                                                      douban_topic_link varchar(100) NOT NULL, 
-                                                     content TEXT NOT NULL, 
+                                                     content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL , 
                                                      author varchar(30) NOT NULL,
                                                      author_page_link varchar(100) NOT NULL,
                                                      quote_author varchar(30), 
                                                      quote_author_link varchar(100), 
-                                                     quote_content TEXT, 
+                                                     quote_content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin, 
                                                      post_timestamp TIMESTAMP NOT NULL, 
                                                      up_count INT DEFAULT 0, 
-                                                     quote_count INT DEFAULT -1) ENGINE = InnoDB;"""
+                                                     quote_count INT DEFAULT -1) 
+                                                     ENGINE = InnoDB
+                                                     DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"""
 #                                  ALTER TABLE `topic_comments` ADD CONSTRAINT `topic_id`
 #                                     FOREIGN KEY (`douban_topic_link`)
 #                                     REFERENCES `bbs_topics` (`douban_topic_link`)
 #                                     ON DELETE NO ACTION
 #                                     ON UPDATE NO ACTION;
-            cur.execute(createtable_sql)
+#
+            #Use utf8mb4-utf8mb4_bin is for support 'emoji' face gif
+            cur.execute(createtable_sql1)
+            conn.commit()
+            cur.execute(createtable_sql2)
             conn.commit()
         except MySQLdb.Error,e:
             log.msg("Mysql Error %d: %s" % (e.args[0], e.args[1]), log.ERROR)
@@ -62,7 +70,10 @@ class DoubanDbHelper(object):
                 return
             
             cur = conn.cursor()
-            insert_sql = u"""INSERT INTO bbs_topics (title,
+            setcharset_sql = u"""SET NAMES utf8mb4;"""
+            cur.execute(setcharset_sql)
+            conn.commit()
+            insert_sql = u""" INSERT INTO bbs_topics (title,
                                                          author,
                                                          author_page_link, 
                                                          content, 
@@ -90,6 +101,10 @@ class DoubanDbHelper(object):
                 return
             
             cur = conn.cursor()
+            setcharset_sql = u"""SET NAMES utf8mb4;"""
+            cur.execute(setcharset_sql)
+            conn.commit()
+            
             insert_sql = u"""INSERT INTO topic_comments (douban_topic_link,
                                                          content,
                                                          author, 

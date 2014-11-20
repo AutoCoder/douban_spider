@@ -36,7 +36,10 @@ class Haixiu_Spider(BaseSpider):
         sel = Selector(None, response.body_as_unicode().replace('\t','').replace('\r','').replace('\n',''), 'html') #avoid the html contain "\n", "\r" , which will caused the xpath doesn't work well
         listdata = sel.xpath('//tr[@class!="th" and not(@id)]')
         page_idx = (int)(response.url.split('=')[-1])
-        nextpageurl = "http://www.douban.com/group/haixiuzu/discussion?start=%d" % (page_idx+1)
+        page_idx += 25
+        nextpageurl = "http://www.douban.com/group/haixiuzu/discussion?start=%d" % page_idx
+        if page_idx > 100:
+            return
         try:
             for topic in listdata:
                 item = HaixiuItem()

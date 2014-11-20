@@ -36,6 +36,7 @@ class DoubanStore2DbPipeline(object):
         try:
             self.conn=MySQLdb.connect(host="127.0.0.1", user='spider',passwd='wodemima',port=3306, charset='utf8')
             self.conn.select_db('Douban')
+            self.conn.set_character_set('utf8mb4')
 
         except MySQLdb.Error,e:
             log.msg("Mysql Error %d: %s" % (e.args[0], e.args[1]), log.ERROR)
