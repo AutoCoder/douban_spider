@@ -29,7 +29,7 @@ class Haixiu_Spider(BaseSpider):
     def start_requests(self):  
         for url in self.start_urls:
             #use fade user-agent to deal with the anti-web-crawling technique
-            yield Request(url,  headers={'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"})
+            yield Request(url,  headers={'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.65 Safari/537.36"})
             
             
     def parse(self, response):
