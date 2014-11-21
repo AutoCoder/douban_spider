@@ -16,16 +16,22 @@ from douban.spiders.basespider import BaseSpider
 from douban.utility import Utility
 
 import sys
-import re
 
 class Haixiu_Spider(BaseSpider):
     name = "haixiu"
     allowed_domains = ["www.douban.com"]
-    start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",]
+    start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",] #
     
     def __init__(self):
         super(Spider, self).__init__()
-    
+        
+        
+    def start_requests(self):  
+        for url in self.start_urls:
+            #use fade user-agent to deal with the anti-web-crawling technique
+            yield Request(url,  headers={'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36"})
+            
+            
     def parse(self, response):
         """
         This function will parse the catalogue of haixiu zu and extract the topic link to parse deeply
@@ -107,7 +113,7 @@ class Haixiu_Spider(BaseSpider):
                 cm_item["author"] = inner_comment_node.xpath('div[@class="bg-img-green"]/h4/a/text()').extract()[0]
                 cm_item["author_page_link"]= inner_comment_node.xpath('div[@class="bg-img-green"]/h4/a/@href').extract()[0]
                 
-                quote_node = comment_node.xpath('div[@class="reply-quote"]')
+                quote_node = inner_comment_node.xpath('div[@class="reply-quote"]')
                 if quote_node:
                     cm_item["quote_content"] = quote_node.xpath('span[@class="all"]').extract()[0]
                     cm_item["quote_author"] = quote_node.xpath('span[@class="pubdate"]/a/text()').extract()[0]
@@ -119,8 +125,7 @@ class Haixiu_Spider(BaseSpider):
                     
                 reply_time_str = inner_comment_node.xpath('div[@class="bg-img-green"]/h4/span[@class="pubtime"]/text()').extract()[0]
                 cm_item["post_timestamp"] = reply_time_str
-                up_count_str = inner_comment_node.xpath('div[@class="operation_div"]/a[@class="comment-vote lnk-fav"]/text()').extract()[0]
-                cm_item["up_count"] = self.__extractUpCount(up_count_str)
+                cm_item["up_count"] = 0
                 cm_item["quote_count"] = -1
                 yield cm_item;
                 
@@ -138,11 +143,3 @@ class Haixiu_Spider(BaseSpider):
 
     def __unicode__(self):
         return unicode(self.name)
-
-
-    def __extractUpCount(self, up_str):
-        m = re.match(ur"\((\d+)\)", up_str)
-        if m:
-            return m.group(1)
-        else: 
-            return 0

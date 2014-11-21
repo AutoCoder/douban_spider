@@ -5,6 +5,8 @@ Created on 2014.11.17
 '''
 import time
 from datetime import datetime
+import re
+
 
 class Utility(object):
     
@@ -30,3 +32,15 @@ class Utility(object):
         datenow = datetime.now()
         dateinput = datetime.strptime(time_str, time_format)  
         return datenow - dateinput
+    
+    @staticmethod 
+    def ExtractNumInbracket(input_str):
+        if len(input_str) > 2:
+            tt = 1
+        m = re.match(ur".*\((\d+)\)", input_str)
+        if m:
+            t = m.group(1)
+            return m.group(1)
+        else: 
+            return 0
+

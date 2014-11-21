@@ -9,7 +9,6 @@ from scrapy import log
 from datetime import date
 import json
 import os
-import re
 
 BasicDir = os.path.dirname(os.path.dirname(__file__))
 ProjectDir = os.path.dirname(BasicDir)
@@ -20,5 +19,4 @@ class BaseSpider(Spider):
         log.start('%s/ScrapyHistory/%s/%s.log' % (ProjectDir, self.name, str(date.today())), loglevel=log.INFO, logstdout=False)        
         configfile = open(configdir + "/dataconfig",'r')
         configdict = json.load(configfile, encoding='utf-8')
-        
         

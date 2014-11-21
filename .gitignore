@@ -1,8 +1,7 @@
 *.pyc
 *.log
-*.json
+douban/*.json
 *.metadata
 ScrapyHistroy
-scrapyImg
 .project
 .pydevproject
