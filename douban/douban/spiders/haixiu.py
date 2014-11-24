@@ -23,7 +23,7 @@ class Haixiu_Spider(BaseSpider):
     start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",] #
     
     def __init__(self):
-        super(Spider, self).__init__()
+        super(Haixiu_Spider, self).__init__()
         
         
     def start_requests(self):  
@@ -44,7 +44,7 @@ class Haixiu_Spider(BaseSpider):
         page_idx = (int)(response.url.split('=')[-1])
         page_idx += 25
         nextpageurl = "http://www.douban.com/group/haixiuzu/discussion?start=%d" % page_idx
-        if page_idx > 100:
+        if page_idx > 500:
             return
         try:
             for topic in listdata:
@@ -84,6 +84,9 @@ class Haixiu_Spider(BaseSpider):
             post_time_str = sel.xpath('//div[@class="topic-doc"]/h3/span[@class="color-green"]/text()').extract()[0]
             item["post_timestamp"] = post_time_str
             
+            delta = Utility.TimeToNow(post_time_str)
+            if delta.days < 2 or delta.days > 3:
+                return
             content_node = sel.xpath('//div[@class="topic-content"]')
             image_nodes = sel.xpath('//div[@class="topic-content"]//img')
             item["image_count"] = len(image_nodes)

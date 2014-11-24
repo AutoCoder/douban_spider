@@ -5,6 +5,10 @@
 #
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
+import os
+
+BasicDir = os.path.dirname(__file__)
+ProjectDir = os.path.dirname(BasicDir)
 
 BOT_NAME = 'douban'
 
@@ -16,3 +20,8 @@ NEWSPIDER_MODULE = 'douban.spiders'
 ITEM_PIPELINES = {'douban.pipelines.DoubanPreprocessPipeline': 1,
                   'douban.pipelines.DoubanStore2DbPipeline': 2
                   }
+
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
+    'douban.middlewares.ProxyMiddleware': 100,
+}

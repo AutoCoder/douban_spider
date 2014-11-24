@@ -35,11 +35,8 @@ class Utility(object):
     
     @staticmethod 
     def ExtractNumInbracket(input_str):
-        if len(input_str) > 2:
-            tt = 1
         m = re.match(ur".*\((\d+)\)", input_str)
         if m:
-            t = m.group(1)
             return m.group(1)
         else: 
             return 0

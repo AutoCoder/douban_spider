@@ -1,6 +1,6 @@
 *.pyc
 *.log
-douban/*.json
+*.json
 *.metadata
 ScrapyHistroy
 .project
