@@ -19,8 +19,8 @@ class proxyfactory:
             }
         """
         try:
-            socket.setdefaulttimeout(5)
-            req = requests.get(url, proxies=proxy_dict)
+            #socket.setdefaulttimeout(1)
+            req = requests.get(url, proxies=proxy_dict, timeout=1.5)
             reponse_text = req.content.decode("utf-8")  
             
         except urllib2.HTTPError as ex :             
