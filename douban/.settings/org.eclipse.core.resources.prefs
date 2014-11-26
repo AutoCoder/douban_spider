@@ -1,2 +1,4 @@
 eclipse.preferences.version=1
+encoding//proxy/__init__.py=utf-8
+encoding//proxy/proxyfactory.py=utf-8
 encoding//utest/doubanut.py=utf-8
