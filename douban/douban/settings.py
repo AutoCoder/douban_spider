@@ -21,6 +21,8 @@ ITEM_PIPELINES = {'douban.pipelines.DoubanPreprocessPipeline': 1,
                   'douban.pipelines.DoubanStore2DbPipeline': 2
                   }
 
+DOWNLOAD_DELAY = 2
+
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
     'douban.middlewares.ProxyMiddleware': 100,
