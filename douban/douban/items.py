@@ -11,6 +11,7 @@ Begin Modify on 2014.11.19
 
 from scrapy.item import Item, Field
 
+    
 class DoubanItem(Item):
     # define the fields for your item here like:
     # name = Field()
@@ -27,7 +28,8 @@ class HaixiuItem(Item):
     douban_topic_link = Field()
     latest_comment_timestamp = Field()
     image_count = Field()
-    
+    image_summary = Field()
+     
 class HaixiuCommentItem(Item):
     douban_topic_link = Field()
     content = Field()

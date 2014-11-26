@@ -28,6 +28,7 @@ class DoubanDbHelper(object):
                                                      content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL, 
                                                      comments_count INT, 
                                                      image_count INT, 
+                                                     image_summary varchar(100)
                                                      douban_topic_id varchar(10),
                                                      douban_topic_link varchar(100),
                                                      latest_comment_timestamp TIMESTAMP NOT NULL,

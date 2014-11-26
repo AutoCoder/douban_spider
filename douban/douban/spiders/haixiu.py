@@ -90,8 +90,10 @@ class Haixiu_Spider(BaseSpider):
             content_node = sel.xpath('//div[@class="topic-content"]')
             image_nodes = sel.xpath('//div[@class="topic-content"]//img')
             item["image_count"] = len(image_nodes)
+            if item["image_count"]:
+                item["image_summary"] = image_nodes[0].xpath('@src').extract()[0]
             item["content"] = content_node.extract()[0]
-
+            
             yield item
             yield Request(url=item["douban_topic_link"] + "?start=0", meta={'topic':item["douban_topic_link"]}, callback=self.parse_comment)
 
