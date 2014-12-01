@@ -20,7 +20,8 @@ import sys
 class Haixiu_Spider(BaseSpider):
     name = "haixiu"
     allowed_domains = ["www.douban.com"]
-    start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",] #
+    start_urls = ["http://www.douban.com/group/haixiuzu/discussion?start=0",
+                  "http://www.douban.com/group/meituikong/discussion?start=0",] #
     
     def __init__(self):
         super(Haixiu_Spider, self).__init__()
@@ -92,6 +93,8 @@ class Haixiu_Spider(BaseSpider):
             item["image_count"] = len(image_nodes)
             if item["image_count"]:
                 item["image_summary"] = image_nodes[0].xpath('@src').extract()[0]
+            else:
+                return
             item["content"] = content_node.extract()[0]
             
             yield item

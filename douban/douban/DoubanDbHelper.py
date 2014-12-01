@@ -28,11 +28,12 @@ class DoubanDbHelper(object):
                                                      content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL, 
                                                      comments_count INT, 
                                                      image_count INT, 
-                                                     image_summary varchar(100)
-                                                     douban_topic_id varchar(10),
+                                                     image_summary varchar(100),
+                                                     douban_topic_id varchar(100),
                                                      douban_topic_link varchar(100),
                                                      latest_comment_timestamp TIMESTAMP NOT NULL,
-                                                     post_timestamp TIMESTAMP NOT NULL) 
+                                                     post_timestamp TIMESTAMP NOT NULL,
+                                                     favor_rank INT DEFAULT 0) 
                                                      ENGINE = InnoDB 
                                                      DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"""
             createtable_sql2 = """CREATE TABLE IF NOT EXISTS topic_comments (Id INT PRIMARY KEY AUTO_INCREMENT,
@@ -82,12 +83,13 @@ class DoubanDbHelper(object):
                                                          content, 
                                                          comments_count, 
                                                          image_count, 
+                                                         image_summary,
                                                          douban_topic_id, 
                                                          douban_topic_link, 
                                                          latest_comment_timestamp, 
-                                                         post_timestamp) VALUES ("%s", "%s", "%s", "%s", %d, %d, "%s", "%s", "%s", "%s")
+                                                         post_timestamp) VALUES ("%s", "%s", "%s", "%s", %d, %d, "%s", "%s", "%s", "%s", "%s")
             """ % (DoubanDbHelper.__escape(item["title"]), DoubanDbHelper.__escape(item["author"]), item["author_page_link"], DoubanDbHelper.__escape(item["content"]), item["comments_count"], \
-                   item["image_count"], item["douban_topic_id"], item["douban_topic_link"], item["latest_comment_timestamp"], (item["post_timestamp"]))
+                   item["image_count"], item["image_summary"], item["douban_topic_id"], item["douban_topic_link"], item["latest_comment_timestamp"], (item["post_timestamp"]))
             cur.execute(insert_sql)
             conn.commit()
             
